@@ -220,6 +220,20 @@ def _in_range(date_str, frm):
         return False
     return d >= frm
 
+def _tonum(v):
+    """Любое значение (int/float/str/None) -> число. '120' -> 120, '10 000 000' -> 10000000."""
+    if v is None:
+        return 0
+    if isinstance(v, (int, float)):
+        return v
+    s = str(v).strip().replace("\xa0", "").replace(" ", "").replace(",", ".")
+    if not s:
+        return 0
+    try:
+        return float(s)
+    except ValueError:
+        return 0
+
 def build_summary(cache, frm=None):
     today = datetime.now(TZ).strftime("%Y-%m-%d")
     absent = load_absent(); goals = load_goals()
@@ -229,12 +243,12 @@ def build_summary(cache, frm=None):
         has = False
         for d, v in days.items():
             if not _in_range(d, frm): continue
-            usilia += v.get("usilia") or 0
-            dozvon += v.get("dozvon") or 0
-            dur    += v.get("duration_min") or 0
-            leads  += v.get("leads") or 0
-            orders += v.get("orders") or 0
-            amount += v.get("amount") or 0
+            usilia += _tonum(v.get("usilia"))
+            dozvon += _tonum(v.get("dozvon"))
+            dur    += _tonum(v.get("duration_min"))
+            leads  += _tonum(v.get("leads"))
+            orders += _tonum(v.get("orders"))
+            amount += _tonum(v.get("amount"))
             has = True
         if not has: continue
         plan = leads * LEAD_PRICE
